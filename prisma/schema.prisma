@@ -1,0 +1,348 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Products-related tables
+model Products {
+  id              Int               @id @default(autoincrement())
+  type_id         Int
+  collection_id   Int
+  title           String
+  subtitle        String
+  description     String
+  handle          String
+  is_dicountable  Boolean
+  created_at      DateTime          @default(now())
+  updated_at      DateTime          @updatedAt
+  type            Types             @relation(fields: [type_id], references: [id])
+  collection      Collection        @relation(fields: [collection_id], references: [id])
+  ProductTags     ProductTags[]
+  ProductOptions  ProductOptions[]
+  ProductVariants ProductVariants[]
+  ProductMedia    ProductMedia[]
+}
+
+model Collection {
+  id                                    Int                                     @id @default(autoincrement())
+  name                                  String
+  created_at                            DateTime                                @default(now())
+  updated_at                            DateTime                                @updatedAt
+  Products                              Products[]
+  DiscountConditionsProductsCollections DiscountConditionsProductsCollections[]
+}
+
+model Types {
+  id                              Int                               @id @default(autoincrement())
+  name                            String
+  created_at                      DateTime                          @default(now())
+  updated_at                      DateTime                          @updatedAt
+  Products                        Products[]
+  DiscountConditionsProductsTypes DiscountConditionsProductsTypes[]
+  DiscountConditionsProducts      DiscountConditionsProducts[]
+}
+
+model Tags {
+  id                             Int                              @id @default(autoincrement())
+  name                           String
+  created_at                     DateTime                         @default(now())
+  updated_at                     DateTime                         @updatedAt
+  ProductTags                    ProductTags[]
+  DiscountConditionsProductsTags DiscountConditionsProductsTags[]
+}
+
+model ProductTags {
+  id         Int      @id @default(autoincrement())
+  tag_id     Int
+  product_id Int
+  tag        Tags     @relation(fields: [tag_id], references: [id])
+  product    Products @relation(fields: [product_id], references: [id])
+}
+
+model ProductOptions {
+  id                      Int                       @id @default(autoincrement())
+  product_id              Int
+  title                   String
+  product                 Products                  @relation(fields: [product_id], references: [id])
+  ProductOptionVariations ProductOptionVariations[]
+}
+
+model ProductOptionVariations {
+  id                            Int                             @id @default(autoincrement())
+  product_option_id             Int
+  title                         String
+  ProductOption                 ProductOptions                  @relation(fields: [product_option_id], references: [id])
+  ProductVariationOptionDetails ProductVariationOptionDetails[]
+}
+
+model ProductVariants {
+  id                            Int                             @id @default(autoincrement())
+  product_id                    Int
+  customTitle                   String
+  material                      String
+  manage_inventory              Boolean
+  created_at                    DateTime                        @default(now())
+  updated_at                    DateTime                        @updatedAt
+  product                       Products                        @relation(fields: [product_id], references: [id])
+  ProductVariationOptionDetails ProductVariationOptionDetails[]
+  ProductMedia                  ProductMedia[]
+  BasePricing                   BasePricing[]
+  ShippingDetails               ShippingDetails[]
+  Inventory                     Inventory[]
+  PricingListProductVariants    PricingListProductVariants[]
+  OrderItems                    OrderItems[]
+}
+
+model ProductVariationOptionDetails {
+  id                          Int                     @id @default(autoincrement())
+  product_variant_id          Int
+  product_option_variation_id Int
+  productVariant              ProductVariants         @relation(fields: [product_variant_id], references: [id])
+  ProductOptionVariation      ProductOptionVariations @relation(fields: [product_option_variation_id], references: [id])
+}
+
+model ProductMedia {
+  id                 Int             @id @default(autoincrement())
+  product_id         Int
+  product_variant_id Int
+  filename           String
+  mime_type          String
+  size               Float
+  file_path          String
+  is_thumbnail       Boolean
+  product            Products        @relation(fields: [product_id], references: [id])
+  productVariant     ProductVariants @relation(fields: [product_variant_id], references: [id])
+}
+
+model BasePricing {
+  id                 Int             @id @default(autoincrement())
+  product_variant_id Int
+  currency_id        Int
+  amount             Float
+  is_deafult         Boolean
+  productVariant     ProductVariants @relation(fields: [product_variant_id], references: [id])
+  currency           Currency        @relation(fields: [currency_id], references: [id])
+}
+
+model ShippingDetails {
+  id                 Int             @id @default(autoincrement())
+  product_variant_id Int
+  height             Float
+  width              Float
+  length             Float
+  mid_code           String
+  hs_code            String
+  country_of_origin  String
+  productVariant     ProductVariants @relation(fields: [product_variant_id], references: [id])
+}
+
+model Inventory {
+  id                 Int             @id @default(autoincrement())
+  product_variant_id Int
+  stock_keeping_unit String
+  barcodeEAN         String
+  barcodeUPC         String
+  barcode            String
+  quantity_in_stock  Int
+  material           String
+  productVariant     ProductVariants @relation(fields: [product_variant_id], references: [id])
+}
+
+// Prices-related tables
+model PricingList {
+  id                         Int                          @id @default(autoincrement())
+  type                       PriceListType
+  name                       String
+  description                String
+  has_start_date             Boolean
+  has_stop_date              Boolean
+  start_date                 DateTime                     @db.Date
+  stop_date                  DateTime                     @db.Date
+  has_start_time             Boolean
+  has_stop_time              Boolean
+  start_time                 DateTime                     @db.Time
+  stop_time                  DateTime                     @db.Time
+  time_zone                  String
+  PricingListProductVariants PricingListProductVariants[]
+}
+
+model PricingListProductVariants {
+  id                 Int             @id @default(autoincrement())
+  pricing_list_id    Int
+  product_variant_id Int
+  currency_id        Int
+  amount             Float
+  pricingList        PricingList     @relation(fields: [pricing_list_id], references: [id])
+  productVariant     ProductVariants @relation(fields: [product_variant_id], references: [id])
+  currency           Currency        @relation(fields: [currency_id], references: [id])
+}
+
+// Discount-related tables
+model DiscountTypes {
+  id              Int                     @id @default(autoincrement())
+  name            String
+  allocation_type DiscountAllocationTypes
+  Discounts       Discounts[]
+}
+
+model Discounts {
+  id                                    Int                                     @id @default(autoincrement())
+  discount_type_id                      Int
+  code                                  String
+  value                                 Float
+  description                           String
+  has_start_date                        Boolean
+  has_stop_date                         Boolean
+  start_date                            DateTime                                @db.Date
+  stop_date                             DateTime                                @db.Date
+  has_start_time                        Boolean
+  has_stop_time                         Boolean
+  start_time                            DateTime                                @db.Time
+  end_time                              DateTime                                @db.Time
+  time_zone                             String
+  has_redemption_limit                  Boolean
+  redemption_limit                      Int
+  has_redemption_limit_per_customer     Boolean
+  redemption_limit_per_customer         Int
+  has_conditions                        Boolean
+  discountType                          DiscountTypes                           @relation(fields: [discount_type_id], references: [id])
+  DiscountConditionsProductsTypes       DiscountConditionsProductsTypes[]
+  DiscountConditionsProducts            DiscountConditionsProducts[]
+  DiscountConditionsProductsCollections DiscountConditionsProductsCollections[]
+  DiscountConditionsProductsTags        DiscountConditionsProductsTags[]
+  DiscountConditionsCustomerGroups      DiscountConditionsCustomerGroups[]
+}
+
+model DiscountConditionsProductsTypes {
+  id              Int       @id @default(autoincrement())
+  discount_id     Int
+  product_type_id Int
+  inclusion_flag  Boolean
+  discount        Discounts @relation(fields: [discount_id], references: [id])
+  type            Types     @relation(fields: [product_type_id], references: [id])
+}
+
+model DiscountConditionsProducts {
+  id             Int       @id @default(autoincrement())
+  discount_id    Int
+  product_id     Int
+  inclusion_flag Boolean
+  discount       Discounts @relation(fields: [discount_id], references: [id])
+  product        Types     @relation(fields: [product_id], references: [id])
+}
+
+model DiscountConditionsProductsCollections {
+  id                    Int        @id @default(autoincrement())
+  discount_id           Int
+  product_collection_id Int
+  inclusion_flag        Boolean
+  discount              Discounts  @relation(fields: [discount_id], references: [id])
+  collection            Collection @relation(fields: [product_collection_id], references: [id])
+}
+
+model DiscountConditionsProductsTags {
+  id             Int       @id @default(autoincrement())
+  discount_id    Int
+  product_tag_id Int
+  inclusion_flag Boolean
+  discount       Discounts @relation(fields: [discount_id], references: [id])
+  tag            Tags      @relation(fields: [product_tag_id], references: [id])
+}
+
+model DiscountConditionsCustomerGroups {
+  id                Int       @id @default(autoincrement())
+  discount_id       Int
+  customer_group_id Int
+  inclusion_flag    Boolean
+  discount          Discounts @relation(fields: [discount_id], references: [id])
+  group             Groups    @relation(fields: [customer_group_id], references: [id])
+}
+
+// Customers-related tables
+model Customers {
+  id                Int                 @id @default(autoincrement())
+  first_name        String
+  last_name         String
+  username          String
+  email             String
+  password          String
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  ShippingAddresses ShippingAddresses[]
+  GroupMembers      GroupMembers[]
+  Orders            Orders[]
+}
+
+model ShippingAddresses {
+  id          Int       @id @default(autoincrement())
+  customer_id Int
+  address     String
+  customer    Customers @relation(fields: [customer_id], references: [id])
+  Orders      Orders[]
+}
+
+model Groups {
+  id                               Int                                @id @default(autoincrement())
+  name                             String
+  created_at                       DateTime                           @default(now())
+  updated_at                       DateTime                           @updatedAt
+  DiscountConditionsCustomerGroups DiscountConditionsCustomerGroups[]
+  GroupMembers                     GroupMembers[]
+}
+
+model GroupMembers {
+  id          Int       @id @default(autoincrement())
+  group_id    Int
+  customer_id Int
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  group       Groups    @relation(fields: [group_id], references: [id])
+  customer    Customers @relation(fields: [customer_id], references: [id])
+}
+
+// Orders-related table
+model Orders {
+  id                  Int               @id @default(autoincrement())
+  customer_id         Int
+  shipping_address_id Int
+  total_amount        Float
+  fulfillment         Boolean
+  created_at          DateTime          @default(now())
+  updated_at          DateTime          @updatedAt
+  customer            Customers         @relation(fields: [customer_id], references: [id])
+  shippingAddresses   ShippingAddresses @relation(fields: [shipping_address_id], references: [id])
+  OrderItems          OrderItems[]
+}
+
+model OrderItems {
+  id                 Int             @id @default(autoincrement())
+  order_id           Int
+  product_variant_id Int
+  quantity           Int
+  order              Orders          @relation(fields: [order_id], references: [id])
+  productVariant     ProductVariants @relation(fields: [product_variant_id], references: [id])
+}
+
+// Currency-related table
+model Currency {
+  id                         Int                          @id @default(autoincrement())
+  currency_name              String
+  currency_code              String
+  PricingListProductVariants PricingListProductVariants[]
+  BasePricing                BasePricing[]
+}
+
+// enums
+enum DiscountAllocationTypes {
+  TotalAmount
+  ItemSpecific
+}
+
+enum PriceListType {
+  Sale
+  Override
+}

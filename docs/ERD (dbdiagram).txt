@@ -1,0 +1,331 @@
+Table Products {
+  id             Int
+  type_id        Int
+  collection_id  Int
+  title          String
+  subtitle       String
+  description    String
+  handle         String
+  is_dicountable Boolean
+  created_at     DateTime
+  updated_at     DateTime
+}
+
+Table Collection {
+  id           Int
+  name         String
+  created_at   DateTime
+  updated_at   DateTime
+}
+
+Table Types {
+  id         Int
+  name       String
+  created_at DateTime
+  updated_at DateTime
+}
+
+Table Tags {
+  id         Int
+  name       String
+  created_at DateTime
+  updated_at DateTime
+}
+
+Table ProductTags {
+  id         Int
+  tag_id     Int
+  product_id Int
+}
+
+Table ProductOptions {
+  id         Int
+  product_id Int
+  title      String
+}
+
+Table ProductOptionVariations {
+  id                  Int
+  product_option_id   Int
+  title               String
+}
+
+Table ProductVariants {
+  id                     Int
+  product_id             Int
+  customTitle            String
+  material               String
+  manage_inventory       Boolean
+  created_at             DateTime
+  updated_at             DateTime
+}
+
+Table ProductVariationOptionDetails {
+  id                            Int
+  product_variant_id            Int
+  product_option_variation_id   Int
+}
+
+Table ProductMedia {
+  id                 Int
+  product_id         Int
+  product_variant_id Int
+  filename           String
+  mime_type          String
+  size               Float
+  file_path          String
+  is_thumbnail       Boolean
+}
+
+Table BasePricing {
+  id                 Int
+  product_variant_id Int
+  currency_id        Int
+  amount             Float
+  is_deafult         Boolean
+}
+
+Table ShippingDetails {
+  id                 Int
+  product_variant_id Int
+  height             Float
+  width              Float
+  length             Float
+  mid_code           String
+  hs_code            String
+  country_of_origin  String
+}
+
+Table Inventory {
+  id                 Int
+  product_variant_id Int
+  stock_keeping_unit String
+  barcodeEAN         String
+  barcodeUPC         String
+  barcode            String
+  quantity_in_stock  Int
+  material           String
+}
+
+Table PricingList {
+  id            Int
+  type          String
+  name          String
+  description   String
+  has_start_date Boolean
+  has_stop_date  Boolean
+  start_date    DateTime
+  stop_date     DateTime
+  has_start_time Boolean
+  has_stop_time  Boolean
+  start_time    DateTime
+  stop_time     DateTime
+  time_zone     String
+}
+
+Table PricingListProductVariants {
+  id                 Int
+  pricing_list_id    Int
+  product_variant_id Int
+  currency_id        Int
+  amount             Float
+}
+
+Table DiscountTypes {
+  id              Int
+  name            String
+  allocation_type String
+}
+
+Table Discounts {
+  id                        Int
+  discount_type_id          Int
+  code                      String
+  value                     Float
+  description               String
+  has_start_date            Boolean
+  has_stop_date             Boolean
+  start_date                DateTime
+  stop_date                 DateTime
+  has_start_time            Boolean
+  has_stop_time             Boolean
+  start_time                DateTime
+  end_time                  DateTime
+  time_zone                 String
+  has_redemption_limit      Boolean
+  redemption_limit          Int
+  has_redemption_limit_per_customer Boolean
+  redemption_limit_per_customer     Int
+  has_conditions            Boolean
+}
+
+Table DiscountConditionsProductsTypes {
+  id             Int
+  discount_id    Int
+  product_type_id Int
+  inclusion_flag Boolean
+}
+
+Table DiscountConditionsProducts {
+  id             Int
+  discount_id    Int
+  product_id     Int
+  inclusion_flag Boolean
+}
+
+Table DiscountConditionsProductsCollections {
+  id                    Int
+  discount_id           Int
+  product_collection_id Int
+  inclusion_flag        Boolean
+}
+
+Table DiscountConditionsProductsTags {
+  id             Int
+  discount_id    Int
+  product_tag_id Int
+  inclusion_flag Boolean
+}
+
+Table DiscountConditionsCustomerGroups {
+  id                Int
+  discount_id       Int
+  customer_group_id Int
+  inclusion_flag    Boolean
+}
+
+Table Customers {
+  id         Int
+  first_name String
+  last_name  String
+  username   String
+  email      String
+  password   String
+  created_at DateTime
+  updated_at DateTime
+}
+
+Table ShippingAddresses {
+  id          Int
+  customer_id Int
+  address     String
+}
+
+Table Groups {
+  id         Int
+  name       String
+  created_at DateTime
+  updated_at DateTime
+}
+
+Table GroupMembers {
+  id          Int
+  group_id    Int
+  customer_id Int
+  created_at  DateTime
+  updated_at  DateTime
+}
+
+Table Orders {
+  id                  Int
+  customer_id         Int
+  shipping_address_id Int
+  total_amount        Float
+  fulfillment         Boolean
+  created_at          DateTime
+  updated_at          DateTime
+}
+
+Table OrderItems {
+  id                 Int
+  order_id           Int
+  product_variant_id Int
+  quantity           Int
+}
+
+Table Currency {
+  id            Int
+  currency_name String
+  currency_code String
+}
+
+Enum DiscountAllocationTypes {
+  TotalAmount
+  ItemSpecific
+}
+
+Enum PriceListType {
+  Sale
+  Override
+}
+
+
+Ref: "ProductTags"."tag_id" < "Tags"."id"
+
+Ref: "ProductTags"."product_id" < "Products"."id"
+
+Ref: "GroupMembers"."group_id" < "Groups"."id"
+
+Ref: "GroupMembers"."customer_id" < "Customers"."id"
+
+Ref: "Products"."type_id" < "Types"."id"
+
+Ref: "Products"."collection_id" < "Collection"."id"
+
+Ref: "Discounts"."discount_type_id" < "DiscountTypes"."id"
+
+Ref: "DiscountConditionsProductsTypes"."discount_id" < "Discounts"."id"
+
+Ref: "DiscountConditionsProducts"."discount_id" < "Discounts"."id"
+
+Ref: "DiscountConditionsProductsCollections"."discount_id" < "Discounts"."id"
+
+Ref: "DiscountConditionsProductsTags"."discount_id" < "Discounts"."id"
+
+Ref: "DiscountConditionsCustomerGroups"."discount_id" < "Discounts"."id"
+
+Ref: "DiscountConditionsProductsTypes"."product_type_id" < "Types"."id"
+
+Ref: "DiscountConditionsProducts"."product_id" < "Products"."id"
+
+Ref: "DiscountConditionsProductsCollections"."product_collection_id" < "Collection"."id"
+
+Ref: "DiscountConditionsProductsTags"."product_tag_id" < "Tags"."id"
+
+Ref: "DiscountConditionsCustomerGroups"."customer_group_id" < "Groups"."id"
+
+Ref: "Inventory"."product_variant_id" < "ProductVariants"."id"
+
+Ref: "ShippingDetails"."product_variant_id" < "ProductVariants"."id"
+
+Ref: "ProductOptions"."product_id" < "Products"."id"
+
+Ref: "ProductOptionVariations"."product_option_id" < "ProductOptions"."id"
+
+Ref: "ProductVariationOptionDetails"."product_variant_id" < "ProductVariants"."id"
+
+Ref: "ProductVariationOptionDetails"."product_option_variation_id" < "ProductOptionVariations"."id"
+
+Ref: "ProductMedia"."product_id" < "Products"."id"
+
+Ref: "ProductMedia"."product_variant_id" < "ProductVariants"."id"
+
+Ref: "BasePricing"."product_variant_id" < "ProductVariants"."id"
+
+Ref: "Currency"."id" < "BasePricing"."currency_id"
+
+Ref: "PricingListProductVariants"."pricing_list_id" < "PricingList"."id"
+
+Ref: "PricingListProductVariants"."product_variant_id" < "ProductVariants"."id"
+
+Ref: "PricingListProductVariants"."currency_id" < "Currency"."id"
+
+Ref: "Orders"."customer_id" < "Customers"."id"
+
+Ref: "Orders"."shipping_address_id" < "ShippingAddresses"."id"
+
+Ref: "OrderItems"."order_id" < "Orders"."id"
+
+Ref: "OrderItems"."product_variant_id" < "ProductVariants"."id"
+
+Ref: "ShippingAddresses"."customer_id" < "Customers"."id"
